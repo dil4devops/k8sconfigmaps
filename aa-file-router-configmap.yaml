@@ -1,0 +1,16 @@
+﻿apiVersion: v1
+data:
+  app_ackeventtopic: ackevent
+  app_ingesteventtopic: ingestevent
+kind: ConfigMap
+metadata:
+  annotations:
+    field.cattle.io/creatorId: u-v72lm
+  creationTimestamp: "2020-09-10T20:41:20Z"
+  labels:
+    cattle.io/creator: norman
+  name: aa-file-router-configmap
+  namespace: izdev
+  resourceVersion: "5575091"
+  selfLink: /api/v1/namespaces/izdev/configmaps/aa-file-router-configmap
+  uid: 75d1762a-eb05-4300-9d53-9e018a26dfe1

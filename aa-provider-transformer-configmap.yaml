@@ -1,0 +1,18 @@
+﻿apiVersion: v1
+data:
+  autooffsetreset: earliest
+  clientid: keymap-streamer1
+  commitinterval: '"1000"'
+  kafka.application.id: keymap-streamer1
+kind: ConfigMap
+metadata:
+  annotations:
+    field.cattle.io/creatorId: u-v72lm
+  creationTimestamp: "2020-09-29T20:56:19Z"
+  labels:
+    cattle.io/creator: norman
+  name: aa-provider-transformer-configmap
+  namespace: izdev
+  resourceVersion: "9872175"
+  selfLink: /api/v1/namespaces/izdev/configmaps/aa-provider-transformer-configmap
+  uid: 4d557f10-b31f-47b1-9191-504a8dad0018

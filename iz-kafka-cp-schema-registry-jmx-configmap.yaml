@@ -1,0 +1,31 @@
+﻿apiVersion: v1
+data:
+  jmx-schema-registry-prometheus.yml: |
+    jmxUrl: service:jmx:rmi:///jndi/rmi://localhost:5555/jmxrmi
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    ssl: false
+    rules:
+    - pattern : 'kafka.schema.registry<type=jetty-metrics>([^:]+):'
+      name: "cp_kafka_schema_registry_jetty_metrics_$1"
+    - pattern : 'kafka.schema.registry<type=master-slave-role>([^:]+):'
+      name: "cp_kafka_schema_registry_master_slave_role"
+    - pattern : 'kafka.schema.registry<type=jersey-metrics>([^:]+):'
+      name: "cp_kafka_schema_registry_jersey_metrics_$1"
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: iz-kafka
+    meta.helm.sh/release-namespace: izdev
+  creationTimestamp: "2020-08-26T19:01:15Z"
+  labels:
+    app: cp-schema-registry
+    app.kubernetes.io/managed-by: Helm
+    chart: cp-schema-registry-0.1.0
+    heritage: Helm
+    release: iz-kafka
+  name: iz-kafka-cp-schema-registry-jmx-configmap
+  namespace: izdev
+  resourceVersion: "17692"
+  selfLink: /api/v1/namespaces/izdev/configmaps/iz-kafka-cp-schema-registry-jmx-configmap
+  uid: 5f6f7127-27f4-4aa6-9ea8-21d206cc95e2

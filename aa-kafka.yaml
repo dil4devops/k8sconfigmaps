@@ -1,0 +1,18 @@
+﻿apiVersion: v1
+data:
+  APP_KAFKA_BROKERS: iz-kafka-cp-kafka-headless:9092
+  APP_SCHEMA_REGISTRY: http://iz-kafka-cp-schema-registry:8081
+  APP_SCHEMA_REGISTRY_URL: http://iz-kafka-cp-schema-registry:8081
+  kafka.bootstrap.servers: iz-kafka-cp-kafka-headless:9092
+kind: ConfigMap
+metadata:
+  annotations:
+    field.cattle.io/creatorId: u-qjldp
+  creationTimestamp: "2020-08-26T18:35:49Z"
+  labels:
+    cattle.io/creator: norman
+  name: aa-kafka
+  namespace: izdev
+  resourceVersion: "4723229"
+  selfLink: /api/v1/namespaces/izdev/configmaps/aa-kafka
+  uid: 08a02740-a9d2-4f24-b0a5-b37986274af3

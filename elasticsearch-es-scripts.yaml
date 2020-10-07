@@ -1,0 +1,167 @@
+﻿apiVersion: v1
+data:
+  pre-stop-hook-script.sh: |
+    #!/usr/bin/env bash
+
+    set -eux
+
+    # This script will wait for up to $PRE_STOP_MAX_WAIT_SECONDS for $POD_IP to disappear from DNS record,
+    # then it will wait additional $PRE_STOP_ADDITIONAL_WAIT_SECONDS and exit. This slows down the process shutdown
+    # and allows to make changes to the pool gracefully, without blackholing traffic when DNS
+    # contains IP that is already inactive. Assumes $HEADLESS_SERVICE_NAME and $POD_IP env variables are defined.
+
+    # Max time to wait for pods IP to disappear from DNS.
+    # As this runs in parallel to grace period after which process is SIGKILLed,
+    # it should be set to allow enough time for the process to gracefully terminate.
+    PRE_STOP_MAX_WAIT_SECONDS=${PRE_STOP_MAX_WAIT_SECONDS:=20}
+
+    # Additional wait before shutting down Elasticsearch.
+    # It allows kube-proxy to refresh its rules and remove the terminating Pod IP.
+    # Kube-proxy refresh period defaults to every 30 seconds, but the operation itself can take much longer if
+    # using iptables with a lot of services, in which case the default 30sec might not be enough.
+    # Also gives some additional bonus time to in-flight requests to terminate, and new requests to still
+    # target the Pod IP before Elasticsearch stops.
+    PRE_STOP_ADDITIONAL_WAIT_SECONDS=${PRE_STOP_ADDITIONAL_WAIT_SECONDS:=30}
+
+    START_TIME=$(date +%s)
+    while true; do
+       ELAPSED_TIME=$(($(date +%s) - $START_TIME))
+
+       if [ $ELAPSED_TIME -gt $PRE_STOP_MAX_WAIT_SECONDS ]; then
+          exit 1
+       fi
+
+       if ! getent hosts $HEADLESS_SERVICE_NAME | grep $POD_IP; then
+          sleep $PRE_STOP_ADDITIONAL_WAIT_SECONDS
+          exit 0
+       fi
+
+       sleep 1
+    done
+  prepare-fs.sh: "#!/usr/bin/env bash\n\n\tset -eu\n\n\t# the operator only works
+    with the default ES distribution\n\tlicense=/usr/share/elasticsearch/LICENSE.txt\n\tif
+    [[ ! -f $license || $(grep -Fxc \"ELASTIC LICENSE AGREEMENT\" $license) -ne 1
+    ]]; then\n\t\t>&2 echo \"unsupported_distribution\"\n\t\texit 42\n\tfi\n\n\t#
+    compute time in seconds since the given start time\n\tfunction duration() {\n\t\tlocal
+    start=$1\n\t\tend=$(date +%s)\n\t\techo $((end-start))\n\t}\n\n\t######################\n\t#
+    \       START       #\n\t######################\n\n\tscript_start=$(date +%s)\n\n\techo
+    \"Starting init script\"\n\n\t######################\n\t#  Config linking    #\n\t######################\n\n\t#
+    Link individual files from their mount location into the config dir\n\t# to a
+    volume, to be used by the ES container\n\tln_start=$(date +%s)\n\t\n\t\techo \"Linking
+    /mnt/elastic-internal/xpack-file-realm/users to /usr/share/elasticsearch/config/users\"\n\t\tln
+    -sf /mnt/elastic-internal/xpack-file-realm/users /usr/share/elasticsearch/config/users\n\t\n\t\techo
+    \"Linking /mnt/elastic-internal/xpack-file-realm/roles.yml to /usr/share/elasticsearch/config/roles.yml\"\n\t\tln
+    -sf /mnt/elastic-internal/xpack-file-realm/roles.yml /usr/share/elasticsearch/config/roles.yml\n\t\n\t\techo
+    \"Linking /mnt/elastic-internal/xpack-file-realm/users_roles to /usr/share/elasticsearch/config/users_roles\"\n\t\tln
+    -sf /mnt/elastic-internal/xpack-file-realm/users_roles /usr/share/elasticsearch/config/users_roles\n\t\n\t\techo
+    \"Linking /mnt/elastic-internal/elasticsearch-config/elasticsearch.yml to /usr/share/elasticsearch/config/elasticsearch.yml\"\n\t\tln
+    -sf /mnt/elastic-internal/elasticsearch-config/elasticsearch.yml /usr/share/elasticsearch/config/elasticsearch.yml\n\t\n\t\techo
+    \"Linking /mnt/elastic-internal/unicast-hosts/unicast_hosts.txt to /usr/share/elasticsearch/config/unicast_hosts.txt\"\n\t\tln
+    -sf /mnt/elastic-internal/unicast-hosts/unicast_hosts.txt /usr/share/elasticsearch/config/unicast_hosts.txt\n\t\n\techo
+    \"File linking duration: $(duration $ln_start) sec.\"\n\n\n\t######################\n\t#
+    \ Files persistence #\n\t######################\n\n\t# Persist the content of
+    bin/, config/ and plugins/ to a volume,\n\t# so installed plugins files can to
+    be used by the ES container\n\tmv_start=$(date +%s)\n\t\n\t\tif [[ -z \"$(ls -A
+    /usr/share/elasticsearch/config)\" ]]; then\n\t\t\techo \"Empty dir /usr/share/elasticsearch/config\"\n\t\telse\n\t\t\techo
+    \"Copying /usr/share/elasticsearch/config/* to /mnt/elastic-internal/elasticsearch-config-local/\"\n\t\t\tcp
+    -av /usr/share/elasticsearch/config/* /mnt/elastic-internal/elasticsearch-config-local/\n\t\tfi\n\t\n\t\tif
+    [[ -z \"$(ls -A /usr/share/elasticsearch/plugins)\" ]]; then\n\t\t\techo \"Empty
+    dir /usr/share/elasticsearch/plugins\"\n\t\telse\n\t\t\techo \"Copying /usr/share/elasticsearch/plugins/*
+    to /mnt/elastic-internal/elasticsearch-plugins-local/\"\n\t\t\tcp -av /usr/share/elasticsearch/plugins/*
+    /mnt/elastic-internal/elasticsearch-plugins-local/\n\t\tfi\n\t\n\t\tif [[ -z \"$(ls
+    -A /usr/share/elasticsearch/bin)\" ]]; then\n\t\t\techo \"Empty dir /usr/share/elasticsearch/bin\"\n\t\telse\n\t\t\techo
+    \"Copying /usr/share/elasticsearch/bin/* to /mnt/elastic-internal/elasticsearch-bin-local/\"\n\t\t\tcp
+    -av /usr/share/elasticsearch/bin/* /mnt/elastic-internal/elasticsearch-bin-local/\n\t\tfi\n\t\n\techo
+    \"Files copy duration: $(duration $mv_start) sec.\"\n\n\t######################\n\t#
+    \ Volumes chown     #\n\t######################\n\n\t# chown the data and logs
+    volume to the elasticsearch user\n\t# only done when running as root, other cases
+    should be handled\n\t# with a proper security context\n\tchown_start=$(date +%s)\n\tif
+    [[ $EUID -eq 0 ]]; then\n\t\t\n\t\t\techo \"chowning /usr/share/elasticsearch/data
+    to elasticsearch:elasticsearch\"\n\t\t\tchown -v elasticsearch:elasticsearch /usr/share/elasticsearch/data\n\t\t\n\t\t\techo
+    \"chowning /usr/share/elasticsearch/logs to elasticsearch:elasticsearch\"\n\t\t\tchown
+    -v elasticsearch:elasticsearch /usr/share/elasticsearch/logs\n\t\t\n\tfi\n\techo
+    \"chown duration: $(duration $chown_start) sec.\"\n\n\t######################\n\t#
+    \ Wait for certs    #\n\t######################\n\n\tINIT_CONTAINER_LOCAL_KEY_PATH=/mnt/elastic-internal/transport-certificates/${POD_NAME}.tls.key\n\n\t#
+    wait for the transport certificates to show up\n\techo \"waiting for the transport
+    certificates (${INIT_CONTAINER_LOCAL_KEY_PATH})\"\n\twait_start=$(date +%s)\n\twhile
+    [ ! -f ${INIT_CONTAINER_LOCAL_KEY_PATH} ]\n\tdo\n\t  sleep 0.2\n\tdone\n\techo
+    \"wait duration: $(duration wait_start) sec.\"\n\n\t######################\n\t#
+    \ Certs linking     #\n\t######################\n\n\tKEY_SOURCE_PATH=/usr/share/elasticsearch/config/transport-certs/${POD_NAME}.tls.key\n\tKEY_TARGET_PATH=/mnt/elastic-internal/elasticsearch-config-local/node-transport-cert/transport.tls.key\n\n\tCERT_SOURCE_PATH=/usr/share/elasticsearch/config/transport-certs/${POD_NAME}.tls.crt\n\tCERT_TARGET_PATH=/mnt/elastic-internal/elasticsearch-config-local/node-transport-cert/transport.tls.crt\n\n\t#
+    Link individual files from their mount location into the config dir\n\t# to a
+    volume, to be used by the ES container\n\tln_start=$(date +%s)\n\n\techo \"Linking
+    $CERT_SOURCE_PATH to $CERT_TARGET_PATH\"\n\tmkdir -p $(dirname $KEY_TARGET_PATH)\n\tln
+    -sf $KEY_SOURCE_PATH $KEY_TARGET_PATH\n\techo \"Linking $CERT_SOURCE_PATH to $CERT_TARGET_PATH\"\n\tmkdir
+    -p $(dirname $CERT_TARGET_PATH)\n\tln -sf $CERT_SOURCE_PATH $CERT_TARGET_PATH\n\n\techo
+    \"Certs linking duration: $(duration $ln_start) sec.\"\n\n\t######################\n\t#
+    \        End        #\n\t######################\n\n\techo \"Init script successful\"\n\techo
+    \"Script duration: $(duration $script_start) sec.\"\n"
+  readiness-probe-script.sh: |
+    #!/usr/bin/env bash
+
+    # fail should be called as a last resort to help the user to understand why the probe failed
+    function fail {
+      timestamp=$(date --iso-8601=seconds)
+      echo "{\"timestamp\": \"${timestamp}\", \"message\": \"readiness probe failed\", "$1"}" | tee /proc/1/fd/2 2> /dev/null
+      exit 1
+    }
+
+    labels="/mnt/elastic-internal/downward-api/labels"
+
+    version=""
+    if [[ -f "${labels}" ]]; then
+      # get Elasticsearch version from the downward API
+      version=$(grep "elasticsearch.k8s.elastic.co/version" ${labels} | cut -d '=' -f 2)
+      # remove quotes
+      version=$(echo "${version}" | tr -d '"')
+    fi
+
+    READINESS_PROBE_TIMEOUT=${READINESS_PROBE_TIMEOUT:=3}
+
+    # Check if PROBE_PASSWORD_PATH is set, otherwise fall back to its former name in 1.0.0.beta-1: PROBE_PASSWORD_FILE
+    if [[ -z "${PROBE_PASSWORD_PATH}" ]]; then
+      probe_password_path="${PROBE_PASSWORD_FILE}"
+    else
+      probe_password_path="${PROBE_PASSWORD_PATH}"
+    fi
+
+    # setup basic auth if credentials are available
+    if [ -n "${PROBE_USERNAME}" ] && [ -f "${probe_password_path}" ]; then
+      PROBE_PASSWORD=$(<${probe_password_path})
+      BASIC_AUTH="-u ${PROBE_USERNAME}:${PROBE_PASSWORD}"
+    else
+      BASIC_AUTH=''
+    fi
+
+    # request Elasticsearch on /
+    ENDPOINT="${READINESS_PROBE_PROTOCOL:-https}://127.0.0.1:9200/"
+    status=$(curl -o /dev/null -w "%{http_code}" --max-time ${READINESS_PROBE_TIMEOUT} -XGET -s -k ${BASIC_AUTH} $ENDPOINT)
+    curl_rc=$?
+
+    if [[ ${curl_rc} -ne 0 ]]; then
+      fail "\"curl_rc\": \"${curl_rc}\""
+    fi
+
+    # ready if status code 200, 503 is tolerable if ES version is 6.x
+    if [[ ${status} == "200" ]] || [[ ${status} == "503" && ${version:0:2} == "6." ]]; then
+      exit 0
+    else
+      fail " \"status\": \"${status}\", \"version\":\"${version}\" "
+    fi
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2020-08-26T18:47:49Z"
+  labels:
+    common.k8s.elastic.co/type: elasticsearch
+    elasticsearch.k8s.elastic.co/cluster-name: elasticsearch-es-scripts
+  name: elasticsearch-es-scripts
+  namespace: izdev
+  ownerReferences:
+  - apiVersion: elasticsearch.k8s.elastic.co/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Elasticsearch
+    name: elasticsearch
+    uid: cc17001f-8322-40cf-ab16-844e6200f562
+  resourceVersion: "14634"
+  selfLink: /api/v1/namespaces/izdev/configmaps/elasticsearch-es-scripts
+  uid: d876ff98-5bbd-4c32-9b15-abd95ea6b137

@@ -1,0 +1,22 @@
+﻿apiVersion: v1
+data:
+  APP_PIPELINE_NAME: PROVIDER
+  APP_TOPIC_CSV_DEADLETTER: providerdlqrecord
+  APP_TOPIC_CSV_EXPORT: providerdata
+  APP_TOPIC_CSV_PRODUCER_DEADLETTER: providerfileprocess
+  APP_TOPIC_CSV_PRODUCER_STATUS: providerfileprocess
+  APP_TOPIC_CSV_TRANSFORMED: providerrecord
+  APP_TOPIC_CSV_VALIDATION: providervalidation
+  APP_TOPIC_SOURCE: providersource
+kind: ConfigMap
+metadata:
+  annotations:
+    field.cattle.io/creatorId: u-v72lm
+  creationTimestamp: "2020-09-29T20:11:30Z"
+  labels:
+    cattle.io/creator: norman
+  name: aa-provider-pipeline-configmap
+  namespace: izdev
+  resourceVersion: "9863147"
+  selfLink: /api/v1/namespaces/izdev/configmaps/aa-provider-pipeline-configmap
+  uid: 1f32d73c-5410-425c-951b-06c67be1ea13

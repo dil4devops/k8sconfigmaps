@@ -1,0 +1,27 @@
+﻿apiVersion: v1
+data:
+  jmx-ksql-server-prometheus.yml: |
+    jmxUrl: service:jmx:rmi:///jndi/rmi://localhost:5555/jmxrmi
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    ssl: false
+    rules:
+    - pattern : 'io.confluent.ksql.metrics<type=ksql-engine-query-stats>([^:]+):'
+      name: "cp_ksql_server_metrics_$1"
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: iz-kafka
+    meta.helm.sh/release-namespace: izdev
+  creationTimestamp: "2020-08-26T19:01:15Z"
+  labels:
+    app: cp-ksql-server
+    app.kubernetes.io/managed-by: Helm
+    chart: cp-ksql-server-0.1.0
+    heritage: Helm
+    release: iz-kafka
+  name: iz-kafka-cp-ksql-server-jmx-configmap
+  namespace: izdev
+  resourceVersion: "17691"
+  selfLink: /api/v1/namespaces/izdev/configmaps/iz-kafka-cp-ksql-server-jmx-configmap
+  uid: 6786e148-8b9e-4c76-93e9-5825fc4ebb7f

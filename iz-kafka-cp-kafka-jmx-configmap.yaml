@@ -1,0 +1,43 @@
+﻿apiVersion: v1
+data:
+  jmx-kafka-prometheus.yml: |
+    jmxUrl: service:jmx:rmi:///jndi/rmi://localhost:5555/jmxrmi
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    ssl: false
+    rules:
+    - pattern : kafka.server<type=ReplicaManager, name=(.+)><>(Value|OneMinuteRate)
+      name: "cp_kafka_server_replicamanager_$1"
+    - pattern : kafka.controller<type=KafkaController, name=(.+)><>Value
+      name: "cp_kafka_controller_kafkacontroller_$1"
+    - pattern : kafka.server<type=BrokerTopicMetrics, name=(.+)><>OneMinuteRate
+      name: "cp_kafka_server_brokertopicmetrics_$1"
+    - pattern : kafka.network<type=RequestMetrics, name=RequestsPerSec, request=(.+)><>OneMinuteRate
+      name: "cp_kafka_network_requestmetrics_requestspersec_$1"
+    - pattern : kafka.network<type=SocketServer, name=NetworkProcessorAvgIdlePercent><>Value
+      name: "cp_kafka_network_socketserver_networkprocessoravgidlepercent"
+    - pattern : kafka.server<type=ReplicaFetcherManager, name=MaxLag, clientId=(.+)><>Value
+      name: "cp_kafka_server_replicafetchermanager_maxlag_$1"
+    - pattern : kafka.server<type=KafkaRequestHandlerPool, name=RequestHandlerAvgIdlePercent><>OneMinuteRate
+      name: "cp_kafka_kafkarequesthandlerpool_requesthandleravgidlepercent"
+    - pattern : kafka.controller<type=ControllerStats, name=(.+)><>OneMinuteRate
+      name: "cp_kafka_controller_controllerstats_$1"
+    - pattern : kafka.server<type=SessionExpireListener, name=(.+)><>OneMinuteRate
+      name: "cp_kafka_server_sessionexpirelistener_$1"
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: iz-kafka
+    meta.helm.sh/release-namespace: izdev
+  creationTimestamp: "2020-08-26T19:01:15Z"
+  labels:
+    app: cp-kafka
+    app.kubernetes.io/managed-by: Helm
+    chart: cp-kafka-0.1.0
+    heritage: Helm
+    release: iz-kafka
+  name: iz-kafka-cp-kafka-jmx-configmap
+  namespace: izdev
+  resourceVersion: "17687"
+  selfLink: /api/v1/namespaces/izdev/configmaps/iz-kafka-cp-kafka-jmx-configmap
+  uid: 683418f8-09d4-41f0-8642-125c3943da0b

@@ -1,0 +1,24 @@
+﻿apiVersion: v1
+data:
+  CONSUMER_GROUPID: synapse-providerdata-consumer7
+  CONSUMER_OFFSETRESET: earliest
+  CONSUMER_POLLTIMEOUT: 1000ms
+  CONSUMER_SCHEMAOVERRIDES: nothing
+  CONSUMER_TABLENAME: providerdata
+  CONSUMER_TOPICDLQ: providerdata-synapse-sink-dlq
+  CONSUMER_TOPICSOURCE: providerdata
+  REDSHIFT_DIALECT: synapse
+  REDSHIFT_DRIVER_CLASS_NAME: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  REDSHIFT_URL: jdbc:sqlserver://eipplus-synapse-dev-dmz.database.windows.net:1433;database=eipplus-synapse-dev-dmz;user=eipplus@eipplus-synapse-dev-dmz;password={your_password_here};encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;useBulkCopyForBatchInsert=true;
+kind: ConfigMap
+metadata:
+  annotations:
+    field.cattle.io/creatorId: u-v72lm
+  creationTimestamp: "2020-09-20T22:18:14Z"
+  labels:
+    cattle.io/creator: norman
+  name: aa-redshift-consumer-configmap
+  namespace: izdev
+  resourceVersion: "8500270"
+  selfLink: /api/v1/namespaces/izdev/configmaps/aa-redshift-consumer-configmap
+  uid: 928e3e99-8ebf-423e-94cd-1b66940650bd

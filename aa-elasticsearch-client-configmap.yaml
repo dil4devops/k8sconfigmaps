@@ -1,0 +1,19 @@
+﻿apiVersion: v1
+data:
+  elasticsearch_environment: SSL
+  elasticsearch_hostname: elasticsearch-es-http
+  elasticsearch_hostport: "9200"
+  elasticsearch_keystorepassword: password
+  elasticsearch_keystorepath: /etc/scripts/keystore.jks
+kind: ConfigMap
+metadata:
+  annotations:
+    field.cattle.io/creatorId: u-v72lm
+  creationTimestamp: "2020-09-13T21:01:02Z"
+  labels:
+    cattle.io/creator: norman
+  name: aa-elasticsearch-client-configmap
+  namespace: izdev
+  resourceVersion: "5651942"
+  selfLink: /api/v1/namespaces/izdev/configmaps/aa-elasticsearch-client-configmap
+  uid: 6d44e9f3-76d2-4e6f-99d8-adea1e9502ba

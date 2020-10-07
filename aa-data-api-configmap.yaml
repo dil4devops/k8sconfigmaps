@@ -1,0 +1,28 @@
+﻿apiVersion: v1
+data:
+  DISABLE_S2S_TOKEN: "true"
+  ELASTIC_CLUSTER_NAME: elasticsearch
+  ELASTIC_HOST: elasticsearch-es-http
+  ELASTIC_PORT: "9200"
+  ENVIRONMENT: SSL
+  HL7_DLQ_INDEX: hl7dlq
+  HL7_REDACTED_INDEX: hl7redacted
+  HL7_VALIDATION_INDEX: hl7validation
+  KEYSTORE_PASSWORD: password
+  KEYSTORE_PATH: /etc/scripts/keystore.jks
+  PROVIDER_DLQ_RECORD_INDEX: providerdlqrecord
+  PROVIDER_FILE_PROCESS_INDEX: providerfileprocess
+  PROVIDER_VALIDATION_INDEX: providervalidation
+  management.health.elasticsearch.enabled: "false"
+kind: ConfigMap
+metadata:
+  annotations:
+    field.cattle.io/creatorId: u-bx56z
+  creationTimestamp: "2020-09-14T21:23:27Z"
+  labels:
+    cattle.io/creator: norman
+  name: aa-data-api-configmap
+  namespace: izdev
+  resourceVersion: "11646290"
+  selfLink: /api/v1/namespaces/izdev/configmaps/aa-data-api-configmap
+  uid: c09d9b63-9c6c-44d0-9cb6-8cbf177ddaaa

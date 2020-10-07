@@ -1,0 +1,19 @@
+﻿apiVersion: v1
+data:
+  APP_ID: l3-transform-streamer-covid-9
+  APP_SERVICEURL: http://transform-service:10005/transform/covid_elr
+  app.applicationid: transform-rest-streamer-2
+  app.clientid: transform-rest-streamer-2
+  kafka.application.id: transform-rest-streamer-2
+kind: ConfigMap
+metadata:
+  annotations:
+    field.cattle.io/creatorId: u-qjldp
+  creationTimestamp: "2020-08-27T18:23:30Z"
+  labels:
+    cattle.io/creator: norman
+  name: aa-transform-rest-streamer-configmap
+  namespace: izdev
+  resourceVersion: "300534"
+  selfLink: /api/v1/namespaces/izdev/configmaps/aa-transform-rest-streamer-configmap
+  uid: 6eaad607-3bda-4a55-900a-93cc44c3e7e2

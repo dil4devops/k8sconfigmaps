@@ -1,0 +1,29 @@
+﻿apiVersion: v1
+data:
+  jmx-kafka-rest-prometheus.yml: |
+    jmxUrl: service:jmx:rmi:///jndi/rmi://localhost:5555/jmxrmi
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    ssl: false
+    rules:
+    - pattern : 'kafka.rest<type=jetty-metrics>([^:]+):'
+      name: "cp_kafka_rest_jetty_metrics_$1"
+    - pattern : 'kafka.rest<type=jersey-metrics>([^:]+):'
+      name: "cp_kafka_rest_jersey_metrics_$1"
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: iz-kafka
+    meta.helm.sh/release-namespace: izdev
+  creationTimestamp: "2020-08-26T19:01:15Z"
+  labels:
+    app: cp-kafka-rest
+    app.kubernetes.io/managed-by: Helm
+    chart: cp-kafka-rest-0.1.0
+    heritage: Helm
+    release: iz-kafka
+  name: iz-kafka-cp-kafka-rest-jmx-configmap
+  namespace: izdev
+  resourceVersion: "17689"
+  selfLink: /api/v1/namespaces/izdev/configmaps/iz-kafka-cp-kafka-rest-jmx-configmap
+  uid: 9658f9d6-19b0-4ac9-9790-d7bd21941982

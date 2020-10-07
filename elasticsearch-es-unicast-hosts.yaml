@@ -1,0 +1,21 @@
+﻿apiVersion: v1
+data:
+  unicast_hosts.txt: 10.244.5.143:9300
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2020-08-26T18:47:51Z"
+  labels:
+    common.k8s.elastic.co/type: elasticsearch
+    elasticsearch.k8s.elastic.co/cluster-name: elasticsearch
+  name: elasticsearch-es-unicast-hosts
+  namespace: izdev
+  ownerReferences:
+  - apiVersion: elasticsearch.k8s.elastic.co/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Elasticsearch
+    name: elasticsearch
+    uid: cc17001f-8322-40cf-ab16-844e6200f562
+  resourceVersion: "10060485"
+  selfLink: /api/v1/namespaces/izdev/configmaps/elasticsearch-es-unicast-hosts
+  uid: d1f15223-e71b-47c4-84d9-c2eec778ac5a

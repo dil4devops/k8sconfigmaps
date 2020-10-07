@@ -1,0 +1,21 @@
+﻿apiVersion: v1
+data:
+  app.applicationid: csvetlstreamer-6
+  app.autooffsetreset: earliest
+  app.clientid: csvetlstreamer-6
+  app.groupname: provider-enrollment
+  commitinterval: '"1000"'
+  s3.default-bucket: alice-extract-profile-int
+  s3.region: us-east-1
+kind: ConfigMap
+metadata:
+  annotations:
+    field.cattle.io/creatorId: u-bx56z
+  creationTimestamp: "2020-09-20T15:04:21Z"
+  labels:
+    cattle.io/creator: norman
+  name: aa-provider-enrollment-validator-configmap
+  namespace: izdev
+  resourceVersion: "8220841"
+  selfLink: /api/v1/namespaces/izdev/configmaps/aa-provider-enrollment-validator-configmap
+  uid: 7867484e-52c6-4ef6-a08b-db086bac1e4a
